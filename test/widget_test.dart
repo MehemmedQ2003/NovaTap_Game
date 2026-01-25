@@ -1,30 +1,32 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:nova_tap/main.dart';
+// DİKKAT: 'flutter_application_1' yerine pubspec.yaml dosyasındaki
+// 'name:' kısmında yazan proje adını yazmalısın.
+// Eğer proje adın farklıysa aşağıdaki satırı ona göre düzelt.
+import 'package:flutter_application_1/main.dart'; 
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const NovaTapApp());
+  testWidgets('Oyun giriş ekranı yükleniyor ve Başla butonu görünüyor', (WidgetTester tester) async {
+    // 1. Uygulamayı sanal ortamda başlat (KelimeOyunuApp bizim ana sınıfımız)
+    await tester.pumpWidget(const KelimeOyunuApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // 2. Animasyonların ve çizimlerin tamamlanmasını bekle
+    await tester.pumpAndSettle();
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // 3. Ekranda 'KELİME USTASI' yazısının olduğunu doğrula
+    expect(find.text('KELİME USTASI'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // 4. 'OYUNA BAŞLA' butonunun olduğunu doğrula
+    expect(find.text('OYUNA BAŞLA'), findsOneWidget);
+
+    // 5. Butona tıkla
+    await tester.tap(find.text('OYUNA BAŞLA'));
+    
+    // 6. Sayfa geçişini bekle
+    await tester.pumpAndSettle();
+
+    // 7. Oyun ekranının açıldığını doğrula (Appbar başlığı veya ipucu)
+    expect(find.text('Kelimeyi Bul'), findsOneWidget);
   });
 }
