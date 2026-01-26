@@ -11,6 +11,7 @@ enum GameMode { single, multiplayer }
 class GameProvider extends ChangeNotifier {
   final WordRepository _repository = WordRepository();
   final ScoreService _scoreService = ScoreService();
+  static const int _maxQuestionsPerDifficulty = 10;
 
   List<WordModel> _filteredWords = [];
   WordModel? _currentWord;
@@ -28,6 +29,12 @@ class GameProvider extends ChangeNotifier {
   int _maxTime = 60;
   int _currentTime = 60;
 
+  // Joker sistemi
+  bool _hasAskFriend = true;
+  bool _hasFiftyFifty = true;
+  bool _hasSkipQuestion = true;
+  Set<String> _eliminatedLetters = {};
+
   WordModel? get currentWord => _currentWord;
   Set<String> get guessedLetters => _guessedLetters;
   int get currentScore => _playerScores[_activePlayerIndex];
@@ -39,6 +46,12 @@ class GameProvider extends ChangeNotifier {
   int get player2Score => _playerScores[1];
   int get currentTime => _currentTime;
   double get timePercent => _currentTime / _maxTime;
+
+  // Joker getters
+  bool get hasAskFriend => _hasAskFriend;
+  bool get hasFiftyFifty => _hasFiftyFifty;
+  bool get hasSkipQuestion => _hasSkipQuestion;
+  Set<String> get eliminatedLetters => _eliminatedLetters;
 
   void _setDifficultySettings() {
     switch (_difficulty) {
@@ -64,6 +77,13 @@ class GameProvider extends ChangeNotifier {
     _status = GameStatus.loading;
     _playerScores = [0, 0];
     _activePlayerIndex = 0;
+
+    // Jokerleri resetle
+    _hasAskFriend = true;
+    _hasFiftyFifty = true;
+    _hasSkipQuestion = true;
+    _eliminatedLetters.clear();
+
     notifyListeners();
 
     _setDifficultySettings();
@@ -76,6 +96,10 @@ class GameProvider extends ChangeNotifier {
     }
 
     _filteredWords.shuffle();
+    if (_filteredWords.length > _maxQuestionsPerDifficulty) {
+      _filteredWords = _filteredWords.take(_maxQuestionsPerDifficulty).toList();
+    }
+
     _currentLevelIndex = 0;
     _startLevel();
   }
@@ -91,6 +115,7 @@ class GameProvider extends ChangeNotifier {
     if (_currentLevelIndex < _filteredWords.length) {
       _currentWord = _filteredWords[_currentLevelIndex];
       _guessedLetters.clear();
+      _eliminatedLetters.clear(); // Elenen harfleri temizle
       _lives = 3; // Can sayısı sabitlendi
       _currentTime = _maxTime; // Süreyi sıfırla
       _status = GameStatus.playing;
@@ -206,27 +231,107 @@ class GameProvider extends ChangeNotifier {
     _startLevel();
   }
 
-  // --- GÜNCELLENEN KISIM BURASI ---
-  // Artık parametre olarak 'playerName' alıyor
-  Future<void> saveScore(String playerName) async {
+  Future<void> saveScore(String playerName, int avatarIndex) async {
     String diffName = _difficulty.name.toUpperCase();
 
     if (_gameMode == GameMode.single) {
-      // Tek kişilikse direkt ismi kaydet
-      await _scoreService.saveScore(_playerScores[0], playerName, diffName);
-    } else {
-      // Çok kişilikse isimlerin yanına P1/P2 ekle
       await _scoreService.saveScore(
-        _playerScores[0],
-        "$playerName (P1)",
-        diffName,
+        score: _playerScores[0],
+        playerName: playerName,
+        difficultyName: diffName,
+        avatarIndex: avatarIndex,
+      );
+    } else {
+      await _scoreService.saveScore(
+        score: _playerScores[0],
+        playerName: "$playerName (P1)",
+        difficultyName: diffName,
+        avatarIndex: avatarIndex,
       );
       await _scoreService.saveScore(
-        _playerScores[1],
-        "$playerName (P2)",
-        diffName,
+        score: _playerScores[1],
+        playerName: "$playerName (P2)",
+        difficultyName: diffName,
+        avatarIndex: avatarIndex,
       );
     }
+  }
+
+  int get totalScore => _playerScores[_activePlayerIndex];
+  Difficulty get difficulty => _difficulty;
+  int get maxTime => _maxTime;
+
+  // --- JOKER FONKSİYONLARI ---
+
+  // Arkadaşı Ara: Doğru bir harfi gösterir
+  String? useAskFriend() {
+    if (!_hasAskFriend || _currentWord == null) return null;
+
+    _hasAskFriend = false;
+
+    // Henüz tahmin edilmemiş harfleri bul
+    final unguessedLetters = _currentWord!.word
+        .split('')
+        .where((letter) => !_guessedLetters.contains(letter))
+        .toSet()
+        .toList();
+
+    if (unguessedLetters.isEmpty) return null;
+
+    // Rastgele bir doğru harf seç
+    unguessedLetters.shuffle();
+    final revealedLetter = unguessedLetters.first;
+
+    // Harfi otomatik tahmin et
+    _guessedLetters.add(revealedLetter);
+    _playerScores[_activePlayerIndex] += 5; // Yarım puan
+
+    _checkGameStatus();
+    notifyListeners();
+
+    return revealedLetter;
+  }
+
+  // 50/50: Yanlış 2 harfi klavyeden kaldırır
+  List<String> useFiftyFifty() {
+    if (!_hasFiftyFifty || _currentWord == null) return [];
+
+    _hasFiftyFifty = false;
+
+    const turkishAlphabet = 'ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ';
+
+    // Kelimede olmayan ve henüz elenmemiş harfleri bul
+    final wrongLetters = turkishAlphabet
+        .split('')
+        .where(
+          (letter) =>
+              !_currentWord!.word.contains(letter) &&
+              !_guessedLetters.contains(letter) &&
+              !_eliminatedLetters.contains(letter),
+        )
+        .toList();
+
+    wrongLetters.shuffle();
+
+    // En fazla 2 harf ele
+    final toEliminate = wrongLetters.take(2).toList();
+    _eliminatedLetters.addAll(toEliminate);
+
+    notifyListeners();
+    return toEliminate;
+  }
+
+  // Soruyu Geç: Mevcut soruyu atlar
+  void useSkipQuestion() {
+    if (!_hasSkipQuestion) return;
+
+    _hasSkipQuestion = false;
+    _cancelTimer();
+
+    // Sonraki soruya geç (puan kaybı yok)
+    _currentLevelIndex++;
+    _eliminatedLetters.clear();
+    _startLevel();
   }
 
   @override

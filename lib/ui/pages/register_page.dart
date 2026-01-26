@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../logic/auth_provider.dart';
+import '../components/avatar_selector.dart';
 import 'home_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -15,6 +16,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  int _selectedAvatar = 0;
 
   void _handleRegister() async {
     if (_formKey.currentState!.validate()) {
@@ -22,6 +24,7 @@ class _RegisterPageState extends State<RegisterPage> {
         _nameController.text,
         _emailController.text,
         _passController.text,
+        _selectedAvatar,
       );
 
       if (mounted) {
@@ -39,7 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
     final isLoading = context.watch<AuthProvider>().isLoading;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Kayıt Ol")),
+      appBar: AppBar(title: const Text("Kayit Ol")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Form(
@@ -47,11 +50,21 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Column(
             children: [
               const SizedBox(height: 20),
+              AvatarSelector(
+                selectedIndex: _selectedAvatar,
+                onSelected: (index) {
+                  setState(() {
+                    _selectedAvatar = index;
+                  });
+                },
+              ),
+              const SizedBox(height: 24),
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
                   labelText: "Ad Soyad / Takma Ad",
                   border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person),
                 ),
                 validator: (v) => v!.isEmpty ? "Bu alan zorunludur" : null,
               ),
@@ -61,6 +74,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 decoration: const InputDecoration(
                   labelText: "E-posta",
                   border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.email),
                 ),
                 validator: (v) => v!.isEmpty ? "Bu alan zorunludur" : null,
               ),
@@ -68,12 +82,13 @@ class _RegisterPageState extends State<RegisterPage> {
               TextFormField(
                 controller: _passController,
                 decoration: const InputDecoration(
-                  labelText: "Şifre",
+                  labelText: "Sifre",
                   border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.lock),
                 ),
                 obscureText: true,
                 validator: (v) =>
-                    v!.length < 4 ? "Şifre en az 4 karakter olmalı" : null,
+                    v!.length < 4 ? "Sifre en az 4 karakter olmali" : null,
               ),
               const SizedBox(height: 30),
               isLoading

@@ -13,6 +13,8 @@ class TimerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     Color timerColor = percent > 0.3
         ? AppColors.timerNormal
         : AppColors.timerCritical;
@@ -26,7 +28,7 @@ class TimerWidget extends StatelessWidget {
           child: CircularProgressIndicator(
             value: percent,
             strokeWidth: 6,
-            backgroundColor: Colors.grey[300],
+            backgroundColor: isDark ? AppColors.neutralDark : Colors.grey[300],
             color: timerColor,
           ),
         ),

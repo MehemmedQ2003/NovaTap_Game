@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/models/user_model.dart';
@@ -12,25 +13,31 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
-    final savedName = prefs.getString('user_name');
-    final savedEmail = prefs.getString('user_email');
+    final userData = prefs.getString('user_data');
 
-    if (savedName != null && savedEmail != null) {
-      _currentUser = UserModel(name: savedName, email: savedEmail);
+    if (userData != null) {
+      final json = jsonDecode(userData) as Map<String, dynamic>;
+      _currentUser = UserModel.fromJson(json);
       notifyListeners();
     }
   }
 
-  Future<bool> register(String name, String email, String password) async {
+  Future<bool> register(String name, String email, String password, int avatarIndex) async {
     _setLoading(true);
     await Future.delayed(const Duration(seconds: 1));
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_name', name);
-    await prefs.setString('user_email', email);
+
+    final user = UserModel(
+      name: name,
+      email: email,
+      avatarIndex: avatarIndex,
+    );
+
+    await prefs.setString('user_data', jsonEncode(user.toJson()));
     await prefs.setString('user_password', password);
 
-    _currentUser = UserModel(name: name, email: email);
+    _currentUser = user;
     _setLoading(false);
     return true;
   }
@@ -40,23 +47,63 @@ class AuthProvider extends ChangeNotifier {
     await Future.delayed(const Duration(seconds: 1));
 
     final prefs = await SharedPreferences.getInstance();
-    final savedEmail = prefs.getString('user_email');
+    final userData = prefs.getString('user_data');
     final savedPass = prefs.getString('user_password');
-    final savedName = prefs.getString('user_name');
 
-    if (savedEmail == email && savedPass == password && savedName != null) {
-      _currentUser = UserModel(name: savedName!, email: email);
-
-      _setLoading(false);
-      return true;
-    } else {
-      _setLoading(false);
-      return false;
+    if (userData != null && savedPass == password) {
+      final json = jsonDecode(userData) as Map<String, dynamic>;
+      if (json['email'] == email) {
+        _currentUser = UserModel.fromJson(json);
+        _setLoading(false);
+        return true;
+      }
     }
+
+    _setLoading(false);
+    return false;
   }
 
   void loginAsGuest() {
     _currentUser = UserModel.guest();
+    notifyListeners();
+  }
+
+  Future<void> updateAvatar(int avatarIndex) async {
+    if (_currentUser == null || _currentUser!.isGuest) return;
+
+    _currentUser = _currentUser!.copyWith(avatarIndex: avatarIndex);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_data', jsonEncode(_currentUser!.toJson()));
+
+    notifyListeners();
+  }
+
+  Future<void> updateStats({int? gamesPlayed, int? gamesWon, int? highScore}) async {
+    if (_currentUser == null || _currentUser!.isGuest) return;
+
+    _currentUser = _currentUser!.copyWith(
+      gamesPlayed: gamesPlayed ?? _currentUser!.gamesPlayed,
+      gamesWon: gamesWon ?? _currentUser!.gamesWon,
+      highScore: highScore ?? _currentUser!.highScore,
+    );
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_data', jsonEncode(_currentUser!.toJson()));
+
+    notifyListeners();
+  }
+
+  Future<void> addBadge(String badgeId) async {
+    if (_currentUser == null || _currentUser!.isGuest) return;
+    if (_currentUser!.badges.contains(badgeId)) return;
+
+    final newBadges = [..._currentUser!.badges, badgeId];
+    _currentUser = _currentUser!.copyWith(badges: newBadges);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_data', jsonEncode(_currentUser!.toJson()));
+
     notifyListeners();
   }
 

@@ -1,7 +1,32 @@
+import 'dart:convert';
+import 'package:flutter/services.dart';
 import '../models/word_model.dart';
 
 class WordRepository {
+  List<WordModel>? _cachedWords;
+
   Future<List<WordModel>> getWords() async {
+    if (_cachedWords != null) {
+      return _cachedWords!;
+    }
+
+    try {
+      final jsonString = await rootBundle.loadString('assets/data/questions.json');
+      final jsonData = json.decode(jsonString) as Map<String, dynamic>;
+      final questionsList = jsonData['questions'] as List<dynamic>;
+
+      _cachedWords = questionsList
+          .map((q) => WordModel.fromJson(q as Map<String, dynamic>))
+          .toList();
+
+      return _cachedWords!;
+    } catch (e) {
+      // Fallback to hardcoded words if JSON loading fails
+      return _getFallbackWords();
+    }
+  }
+
+  List<WordModel> _getFallbackWords() {
     return [
       WordModel(
         id: '1',
@@ -17,48 +42,32 @@ class WordRepository {
       ),
       WordModel(
         id: '3',
-        word: "MEKKE",
-        hint: "Kabe'nin bulunduğu şehir",
+        word: "KURAN",
+        hint: "Kutsal kitabımız",
         difficulty: Difficulty.easy,
       ),
-
       WordModel(
         id: '4',
-        word: "TEYEMMÜM",
-        hint: "Su yoksa toprakla abdest",
+        word: "ZEKAT",
+        hint: "Malın temizlenmesi",
         difficulty: Difficulty.medium,
       ),
       WordModel(
         id: '5',
-        word: "ZEKAT",
-        hint: "Malın temizlenmesi için verilen miktar",
-        difficulty: Difficulty.medium,
-      ),
-      WordModel(
-        id: '6',
         word: "HİCRET",
         hint: "Mekke'den Medine'ye göç",
         difficulty: Difficulty.medium,
       ),
-
       WordModel(
-        id: '7',
-        word: "MUKABELE",
-        hint: "Karşılıklı Kuran okuma",
-        difficulty: Difficulty.hard,
-      ),
-      WordModel(
-        id: '8',
+        id: '6',
         word: "TEVEKKÜL",
-        hint: "Allah'a güvenip dayanma",
-        difficulty: Difficulty.hard,
-      ),
-      WordModel(
-        id: '9',
-        word: "MÜTEVAZI",
-        hint: "Alçak gönüllü olma durumu",
+        hint: "Allah'a güvenme",
         difficulty: Difficulty.hard,
       ),
     ];
+  }
+
+  void clearCache() {
+    _cachedWords = null;
   }
 }

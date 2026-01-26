@@ -1,0 +1,184 @@
+{
+  "questions": [
+    {
+      "id": "1",
+      "word": "NAMAZ",
+      "hint": "Dinin direği, günde beş vakit kılınan ibadet",
+      "difficulty": "easy"
+    },
+    {
+      "id": "2",
+      "word": "ORUÇ",
+      "hint": "Ramazan ayında tutulan ibadet",
+      "difficulty": "easy"
+    },
+    {
+      "id": "3",
+      "word": "MEKKE",
+      "hint": "Kabe'nin bulunduğu kutsal şehir",
+      "difficulty": "easy"
+    },
+    {
+      "id": "4",
+      "word": "KURAN",
+      "hint": "Müslümanların kutsal kitabı",
+      "difficulty": "easy"
+    },
+    {
+      "id": "5",
+      "word": "CAMI",
+      "hint": "Müslümanların ibadet ettiği yer",
+      "difficulty": "easy"
+    },
+    {
+      "id": "6",
+      "word": "ABDEST",
+      "hint": "Namaz öncesi yapılan temizlik",
+      "difficulty": "easy"
+    },
+    {
+      "id": "7",
+      "word": "KIBLE",
+      "hint": "Namaz kılarken yönelinen yön",
+      "difficulty": "easy"
+    },
+    {
+      "id": "8",
+      "word": "DUA",
+      "hint": "Allah'a yapılan yakarış",
+      "difficulty": "easy"
+    },
+    {
+      "id": "9",
+      "word": "CENNET",
+      "hint": "Ahirette iyilerin gideceği yer",
+      "difficulty": "easy"
+    },
+    {
+      "id": "10",
+      "word": "RAMAZAN",
+      "hint": "Oruç tutulan mübarek ay",
+      "difficulty": "easy"
+    },
+    {
+      "id": "11",
+      "word": "ZEKAT",
+      "hint": "Zenginlerin fakirlere vermesi gereken pay",
+      "difficulty": "medium"
+    },
+    {
+      "id": "12",
+      "word": "TEYEMMÜM",
+      "hint": "Su bulunamadığında toprakla yapılan temizlik",
+      "difficulty": "medium"
+    },
+    {
+      "id": "13",
+      "word": "HİCRET",
+      "hint": "Hz. Muhammed'in Mekke'den Medine'ye göçü",
+      "difficulty": "medium"
+    },
+    {
+      "id": "14",
+      "word": "SALAVAT",
+      "hint": "Peygamberimize getirilen dua",
+      "difficulty": "medium"
+    },
+    {
+      "id": "15",
+      "word": "EZAN",
+      "hint": "Namaz vaktini bildiren çağrı",
+      "difficulty": "medium"
+    },
+    {
+      "id": "16",
+      "word": "SECDE",
+      "hint": "Namazda alnı yere koyma",
+      "difficulty": "medium"
+    },
+    {
+      "id": "17",
+      "word": "HADIS",
+      "hint": "Hz. Muhammed'in sözleri",
+      "difficulty": "medium"
+    },
+    {
+      "id": "18",
+      "word": "SAHUR",
+      "hint": "Oruç öncesi yenen yemek",
+      "difficulty": "medium"
+    },
+    {
+      "id": "19",
+      "word": "İFTAR",
+      "hint": "Oruç açma vakti yemeği",
+      "difficulty": "medium"
+    },
+    {
+      "id": "20",
+      "word": "SÜNNET",
+      "hint": "Peygamberimizin yolu ve uygulamaları",
+      "difficulty": "medium"
+    },
+    {
+      "id": "21",
+      "word": "MUKABELE",
+      "hint": "Ramazanda karşılıklı Kuran okuma",
+      "difficulty": "hard"
+    },
+    {
+      "id": "22",
+      "word": "TEVEKKÜL",
+      "hint": "Allah'a güvenip bağlanma",
+      "difficulty": "hard"
+    },
+    {
+      "id": "23",
+      "word": "MÜTEVAZI",
+      "hint": "Alçak gönüllü, kibirsiz olma hali",
+      "difficulty": "hard"
+    },
+    {
+      "id": "24",
+      "word": "İSTİĞFAR",
+      "hint": "Allah'tan bağışlanma dileme",
+      "difficulty": "hard"
+    },
+    {
+      "id": "25",
+      "word": "MÜEZZIN",
+      "hint": "Ezan okuyan kişi",
+      "difficulty": "hard"
+    },
+    {
+      "id": "26",
+      "word": "MİNARE",
+      "hint": "Caminin yüksek kulesi",
+      "difficulty": "hard"
+    },
+    {
+      "id": "27",
+      "word": "TEFSİR",
+      "hint": "Kuran'ın açıklanması ve yorumlanması",
+      "difficulty": "hard"
+    },
+    {
+      "id": "28",
+      "word": "TECVIT",
+      "hint": "Kuran'ı doğru okuma kuralları",
+      "difficulty": "hard"
+    },
+    {
+      "id": "29",
+      "word": "İTİKAF",
+      "hint": "Camide ibadet için kalma",
+      "difficulty": "hard"
+    },
+    {
+      "id": "30",
+      "word": "MAHŞER",
+      "hint": "Kıyamet günü toplanma yeri",
+      "difficulty": "hard"
+    }
+  ]
+}
