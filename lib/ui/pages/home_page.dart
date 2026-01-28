@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants.dart';
-import '../../data/models/word_model.dart';
+import '../../data/models/question_model.dart';
 import '../../logic/game_provider.dart';
 import '../../logic/auth_provider.dart';
 import '../../logic/theme_provider.dart';
 import '../components/avatar_selector.dart';
-import 'game_page.dart';
+import 'quiz_page.dart';
 import 'scoreboard_page.dart';
 import 'profile_page.dart';
 import 'support_page.dart';
@@ -110,12 +110,12 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 20),
 
-                const Icon(Icons.mosque, size: 60, color: Colors.white),
+                const Icon(Icons.quiz, size: 60, color: Colors.white),
                 const SizedBox(height: 10),
                 const Text(
-                  "KELIME AVCISI",
+                  "DİNİ BİLGİ YARIŞMASI",
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -251,7 +251,7 @@ class _HomePageState extends State<HomePage> {
           );
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const GamePage()),
+            MaterialPageRoute(builder: (_) => const QuizPage()),
           );
         },
         child: Text(

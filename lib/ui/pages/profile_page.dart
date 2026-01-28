@@ -7,20 +7,167 @@ import '../../data/services/badge_service.dart';
 import '../components/avatar_selector.dart';
 import '../components/badge_widget.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  bool _isEditing = false;
+  bool _isSaving = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isEditing) {
+      final user = context.read<AuthProvider>().currentUser;
+      if (user != null) {
+        _nameController.text = user.name;
+        _emailController.text = user.email;
+      }
+    }
+  }
+
+  void _toggleEditing(AuthProvider auth) {
+    if (_isEditing) {
+      setState(() => _isEditing = false);
+      return;
+    }
+
+    final user = auth.currentUser;
+    _nameController.text = user?.name ?? '';
+    _emailController.text = user?.email ?? '';
+    setState(() => _isEditing = true);
+  }
+
+  Future<void> _saveProfile(AuthProvider auth) async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSaving = true);
+    await auth.updateProfile(
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+    );
+    if (!mounted) return;
+
+    setState(() {
+      _isSaving = false;
+      _isEditing = false;
+    });
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Profil güncellendi')));
+  }
+
+  Widget _buildEditCard(bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardBackgroundDark : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Profil Bilgilerini Güncelle',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: isDark ? AppColors.textLight : AppColors.textDark,
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _nameController,
+            decoration: InputDecoration(
+              labelText: 'Ad Soyad',
+              filled: true,
+              fillColor: isDark
+                  ? AppColors.surfaceDark
+                  : AppColors.neutralLight,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark
+                      ? AppColors.neutralDark
+                      : AppColors.neutralLight,
+                ),
+              ),
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Ad soyad boş olamaz';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            autofillHints: const [AutofillHints.email],
+            decoration: InputDecoration(
+              labelText: 'E-posta',
+              filled: true,
+              fillColor: isDark
+                  ? AppColors.surfaceDark
+                  : AppColors.neutralLight,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark
+                      ? AppColors.neutralDark
+                      : AppColors.neutralLight,
+                ),
+              ),
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'E-posta boş olamaz';
+              }
+              if (!value.contains('@')) {
+                return 'Geçerli e-posta giriniz';
+              }
+              return null;
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final user = auth.currentUser;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (user == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Profil')),
-        body: const Center(
-          child: Text('Lutfen giris yapin'),
-        ),
+        body: const Center(child: Text('Lütfen giriş yapın')),
       );
     }
 
@@ -34,59 +181,106 @@ class ProfilePage extends StatelessWidget {
         actions: [
           if (!user.isGuest)
             IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () => _showEditAvatarDialog(context, auth),
+              icon: Icon(_isEditing ? Icons.close : Icons.edit),
+              onPressed: () => _toggleEditing(auth),
             ),
         ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Profile Header
-            _ProfileHeader(user: user),
-
-            const SizedBox(height: 24),
-
-            // Statistics
-            _StatisticsSection(user: user),
-
-            const SizedBox(height: 24),
-
-            // Badges Section
-            _BadgesSection(
-              unlockedBadges: unlockedBadges,
-              lockedBadges: lockedBadges,
-            ),
-
-            const SizedBox(height: 24),
-
-            // Theme Settings
-            _ThemeSection(),
-
-            const SizedBox(height: 24),
-
-            // Logout Button
-            if (!user.isGuest)
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    auth.logout();
-                    Navigator.popUntil(context, (route) => route.isFirst);
-                  },
-                  icon: const Icon(Icons.logout, color: AppColors.failure),
-                  label: const Text(
-                    'Cikis Yap',
-                    style: TextStyle(color: AppColors.failure),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.failure),
-                    padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              _ProfileHeader(user: user),
+              if (!user.isGuest)
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showEditAvatarDialog(context, auth),
+                    icon: const Icon(Icons.edit, size: 18),
+                    label: const Text('Avatarı Değiştir'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white70),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 20,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
                 ),
+              const SizedBox(height: 24),
+              if (_isEditing) _buildEditCard(isDark),
+              if (_isEditing)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16, bottom: 24),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: _isSaving ? null : () => _saveProfile(auth),
+                      child: _isSaving
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Tamamla',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 24),
+              _StatisticsSection(user: user),
+              const SizedBox(height: 24),
+              _BadgesSection(
+                unlockedBadges: unlockedBadges,
+                lockedBadges: lockedBadges,
               ),
-          ],
+              const SizedBox(height: 24),
+              _ThemeSection(),
+              const SizedBox(height: 24),
+              if (!user.isGuest)
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      auth.logout();
+                      Navigator.popUntil(context, (route) => route.isFirst);
+                    },
+                    icon: const Icon(Icons.logout, color: AppColors.failure),
+                    label: const Text(
+                      'Çıkış Yap',
+                      style: TextStyle(color: AppColors.failure),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.failure),
+                      padding: const EdgeInsets.all(16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -99,7 +293,7 @@ class ProfilePage extends StatelessWidget {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Avatar Degistir'),
+          title: const Text('Avatar Değiştir'),
           content: AvatarSelector(
             selectedIndex: selectedAvatar,
             onSelected: (index) {
@@ -111,7 +305,7 @@ class ProfilePage extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Iptal'),
+              child: const Text('İptal'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -138,10 +332,7 @@ class _ProfileHeader extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppColors.primary,
-            AppColors.primary.withValues(alpha: 0.7),
-          ],
+          colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.7)],
         ),
         borderRadius: BorderRadius.circular(16),
       ),
@@ -199,7 +390,7 @@ class _StatisticsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Istatistikler',
+          'İstatistikler',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -213,7 +404,7 @@ class _StatisticsSection extends StatelessWidget {
               child: _StatCard(
                 icon: Icons.games,
                 label: 'Oynanan',
-                value: '${user.gamesPlayed}',
+                value: '',
                 color: AppColors.primary,
               ),
             ),
@@ -221,8 +412,8 @@ class _StatisticsSection extends StatelessWidget {
             Expanded(
               child: _StatCard(
                 icon: Icons.emoji_events,
-                label: 'Kazanilan',
-                value: '${user.gamesWon}',
+                label: 'Kazanılan',
+                value: '',
                 color: AppColors.success,
               ),
             ),
@@ -230,8 +421,8 @@ class _StatisticsSection extends StatelessWidget {
             Expanded(
               child: _StatCard(
                 icon: Icons.star,
-                label: 'En Yuksek',
-                value: '${user.highScore}',
+                label: 'En Yüksek',
+                value: '',
                 color: AppColors.accent,
               ),
             ),
@@ -278,10 +469,7 @@ class _StatCard extends StatelessWidget {
           ),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.neutral,
-            ),
+            style: const TextStyle(fontSize: 12, color: AppColors.neutral),
           ),
         ],
       ),
@@ -315,11 +503,8 @@ class _BadgesSection extends StatelessWidget {
               ),
             ),
             Text(
-              '${unlockedBadges.length}/${unlockedBadges.length + lockedBadges.length}',
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.neutral,
-              ),
+              '/',
+              style: const TextStyle(fontSize: 14, color: AppColors.neutral),
             ),
           ],
         ),
@@ -343,7 +528,7 @@ class _ThemeSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Gorunum',
+          'Görünüm',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -362,7 +547,7 @@ class _ThemeSection extends StatelessWidget {
               Expanded(
                 child: _ThemeOptionButton(
                   icon: Icons.light_mode,
-                  label: 'Acik',
+                  label: 'Açık',
                   isSelected: themeProvider.isLightMode,
                   onTap: () => themeProvider.setThemeMode(ThemeMode.light),
                 ),
@@ -425,7 +610,9 @@ class _ThemeOptionButton extends StatelessWidget {
               icon,
               color: isSelected
                   ? Colors.white
-                  : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary),
+                  : (isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondary),
               size: 22,
             ),
             const SizedBox(height: 4),
@@ -436,7 +623,9 @@ class _ThemeOptionButton extends StatelessWidget {
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 color: isSelected
                     ? Colors.white
-                    : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary),
+                    : (isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondary),
               ),
             ),
           ],

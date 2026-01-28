@@ -1,68 +1,91 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../data/models/word_model.dart';
-import '../data/repositories/word_repository.dart';
+import '../data/models/question_model.dart';
+import '../data/repositories/question_repository.dart';
 import '../data/services/score_service.dart';
 
-enum GameStatus { initial, loading, playing, won, lost }
+enum GameStatus { initial, loading, playing, answered, won, lost }
 
 enum GameMode { single, multiplayer }
 
 class GameProvider extends ChangeNotifier {
-  final WordRepository _repository = WordRepository();
+  final QuestionRepository _repository = QuestionRepository();
   final ScoreService _scoreService = ScoreService();
-  static const int _maxQuestionsPerDifficulty = 10;
+  static const int _maxQuestionsPerGame = 10;
 
-  List<WordModel> _filteredWords = [];
-  WordModel? _currentWord;
-  Set<String> _guessedLetters = {};
+  List<QuestionModel> _filteredQuestions = [];
+  QuestionModel? _currentQuestion;
+  int? _selectedOptionIndex;
+  bool? _isLastAnswerCorrect;
+
+  // Word guess için
+  final Set<String> _guessedLetters = {};
+  String _currentGuess = '';
 
   GameMode _gameMode = GameMode.single;
   Difficulty _difficulty = Difficulty.medium;
   int _activePlayerIndex = 0;
   List<int> _playerScores = [0, 0];
-  int _lives = 5;
-  int _currentLevelIndex = 0;
+  int _correctAnswers = 0;
+  int _wrongAnswers = 0;
+  int _currentQuestionIndex = 0;
   GameStatus _status = GameStatus.initial;
 
   Timer? _timer;
-  int _maxTime = 60;
-  int _currentTime = 60;
+  int _maxTime = 30;
+  int _currentTime = 30;
 
   // Joker sistemi
   bool _hasAskFriend = true;
   bool _hasFiftyFifty = true;
   bool _hasSkipQuestion = true;
-  Set<String> _eliminatedLetters = {};
+  final Set<int> _eliminatedOptions = {};
+  final Set<String> _eliminatedLetters = {};
+  String? _revealedLetter;
 
-  WordModel? get currentWord => _currentWord;
-  Set<String> get guessedLetters => _guessedLetters;
+  // Getters
+  QuestionModel? get currentQuestion => _currentQuestion;
+  int? get selectedOptionIndex => _selectedOptionIndex;
+  bool? get isLastAnswerCorrect => _isLastAnswerCorrect;
   int get currentScore => _playerScores[_activePlayerIndex];
-  int get lives => _lives;
+  int get correctAnswers => _correctAnswers;
+  int get wrongAnswers => _wrongAnswers;
   GameStatus get status => _status;
   GameMode get gameMode => _gameMode;
   int get activePlayerIndex => _activePlayerIndex;
   int get player1Score => _playerScores[0];
   int get player2Score => _playerScores[1];
   int get currentTime => _currentTime;
+  int get maxTime => _maxTime;
   double get timePercent => _currentTime / _maxTime;
+  int get currentQuestionNumber => _currentQuestionIndex + 1;
+  int get totalQuestions => _filteredQuestions.length;
+
+  // Word guess getters
+  Set<String> get guessedLetters => _guessedLetters;
+  String get currentGuess => _currentGuess;
+  String? get revealedLetter => _revealedLetter;
 
   // Joker getters
   bool get hasAskFriend => _hasAskFriend;
   bool get hasFiftyFifty => _hasFiftyFifty;
   bool get hasSkipQuestion => _hasSkipQuestion;
+  Set<int> get eliminatedOptions => _eliminatedOptions;
   Set<String> get eliminatedLetters => _eliminatedLetters;
+
+  Difficulty get difficulty => _difficulty;
+  int get totalScore => _playerScores[_activePlayerIndex];
 
   void _setDifficultySettings() {
     switch (_difficulty) {
       case Difficulty.easy:
-        _maxTime = 90;
+        _maxTime = 45;
         break;
       case Difficulty.medium:
-        _maxTime = 60;
+        _maxTime = 30;
         break;
       case Difficulty.hard:
-        _maxTime = 30;
+        _maxTime = 20;
         break;
     }
     _currentTime = _maxTime;
@@ -77,63 +100,77 @@ class GameProvider extends ChangeNotifier {
     _status = GameStatus.loading;
     _playerScores = [0, 0];
     _activePlayerIndex = 0;
+    _correctAnswers = 0;
+    _wrongAnswers = 0;
+    _selectedOptionIndex = null;
+    _isLastAnswerCorrect = null;
+    _currentGuess = '';
+    _guessedLetters.clear();
 
     // Jokerleri resetle
     _hasAskFriend = true;
     _hasFiftyFifty = true;
     _hasSkipQuestion = true;
+    _eliminatedOptions.clear();
     _eliminatedLetters.clear();
+    _revealedLetter = null;
 
     notifyListeners();
 
     _setDifficultySettings();
-    final allWords = await _repository.getWords();
+    final allQuestions = await _repository.getQuestions();
 
-    _filteredWords = allWords.where((w) => w.difficulty == difficulty).toList();
+    _filteredQuestions = allQuestions.where((q) => q.difficulty == difficulty).toList();
 
-    if (_filteredWords.length < 3) {
-      _filteredWords = List.from(allWords);
+    if (_filteredQuestions.length < 3) {
+      _filteredQuestions = List.from(allQuestions);
     }
 
-    _filteredWords.shuffle();
-    if (_filteredWords.length > _maxQuestionsPerDifficulty) {
-      _filteredWords = _filteredWords.take(_maxQuestionsPerDifficulty).toList();
+    _filteredQuestions.shuffle();
+    if (_filteredQuestions.length > _maxQuestionsPerGame) {
+      _filteredQuestions = _filteredQuestions.take(_maxQuestionsPerGame).toList();
     }
 
-    _currentLevelIndex = 0;
-    _startLevel();
+    _currentQuestionIndex = 0;
+    _startQuestion();
   }
 
-  void _startLevel() {
+  void _startQuestion() {
     _cancelTimer();
 
-    if (_filteredWords.isEmpty) {
-      _allWordsCompleted();
+    if (_filteredQuestions.isEmpty) {
+      _endGame();
       return;
     }
 
-    if (_currentLevelIndex < _filteredWords.length) {
-      _currentWord = _filteredWords[_currentLevelIndex];
+    if (_currentQuestionIndex < _filteredQuestions.length) {
+      _currentQuestion = _filteredQuestions[_currentQuestionIndex];
+      _selectedOptionIndex = null;
+      _isLastAnswerCorrect = null;
+      _eliminatedOptions.clear();
+      _eliminatedLetters.clear();
       _guessedLetters.clear();
-      _eliminatedLetters.clear(); // Elenen harfleri temizle
-      _lives = 3; // Can sayısı sabitlendi
-      _currentTime = _maxTime; // Süreyi sıfırla
+      _currentGuess = '';
+      _revealedLetter = null;
+      _currentTime = _maxTime;
       _status = GameStatus.playing;
-      _startTimer(); // Sayacı başlat
+      _startTimer();
     } else {
-      _allWordsCompleted();
+      _endGame();
     }
     notifyListeners();
   }
 
-  void _allWordsCompleted() {
-    // Kelimeler bitince listeyi tekrar karıştır
-    _filteredWords.shuffle();
-    _currentLevelIndex = 0;
-    _startLevel();
+  void _endGame() {
+    _cancelTimer();
+    if (_correctAnswers > _wrongAnswers) {
+      _status = GameStatus.won;
+    } else {
+      _status = GameStatus.lost;
+    }
+    notifyListeners();
   }
 
-  // --- TIMER MANTIĞI ---
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_status != GameStatus.playing) {
@@ -145,7 +182,6 @@ class GameProvider extends ChangeNotifier {
         _currentTime--;
         notifyListeners();
       } else {
-        // Süre bitti!
         timer.cancel();
         _handleTimeOut();
       }
@@ -153,15 +189,10 @@ class GameProvider extends ChangeNotifier {
   }
 
   void _handleTimeOut() {
-    _lives--;
-    if (_lives <= 0) {
-      _status = GameStatus.lost;
-      _calculateScore(isWin: false);
-    } else {
-      // Süre bitti ama can var, süreyi resetle devam et
-      _currentTime = _maxTime;
-      _startTimer();
-    }
+    _wrongAnswers++;
+    _isLastAnswerCorrect = false;
+    _status = GameStatus.answered;
+    _calculateScore(isCorrect: false);
     notifyListeners();
   }
 
@@ -169,66 +200,116 @@ class GameProvider extends ChangeNotifier {
     _timer?.cancel();
   }
 
-  // --- OYUN İŞLEMLERİ ---
-
-  void guessLetter(String letter) {
-    if (_status != GameStatus.playing || _guessedLetters.contains(letter))
+  // Multiple Choice için
+  void selectOption(int optionIndex) {
+    if (_status != GameStatus.playing ||
+        _currentQuestion == null ||
+        !_currentQuestion!.isMultipleChoice ||
+        _eliminatedOptions.contains(optionIndex)) {
       return;
-
-    _guessedLetters.add(letter);
-
-    if (!_currentWord!.word.contains(letter)) {
-      _lives--;
-      // Yanlış bilince süre cezası (Opsiyonel)
-      // _currentTime = (_currentTime - 5).clamp(0, _maxTime);
-    } else {
-      // Doğru harf puanı
-      _playerScores[_activePlayerIndex] += 10;
     }
 
-    _checkGameStatus();
+    _cancelTimer();
+    _selectedOptionIndex = optionIndex;
+    _isLastAnswerCorrect = _currentQuestion!.isCorrectOption(optionIndex);
+
+    if (_isLastAnswerCorrect!) {
+      _correctAnswers++;
+      _calculateScore(isCorrect: true);
+    } else {
+      _wrongAnswers++;
+      _calculateScore(isCorrect: false);
+    }
+
+    _status = GameStatus.answered;
     notifyListeners();
   }
 
-  void _checkGameStatus() {
-    if (_lives <= 0) {
-      _status = GameStatus.lost;
-      _cancelTimer();
-      _calculateScore(isWin: false);
-    } else {
-      bool allGuessed = _currentWord!.word
-          .split('')
-          .every((char) => _guessedLetters.contains(char));
-      if (allGuessed) {
-        _status = GameStatus.won;
-        _cancelTimer();
-        _calculateScore(isWin: true);
-      }
-    }
-  }
-
-  void _calculateScore({required bool isWin}) {
-    if (!isWin) {
-      _playerScores[_activePlayerIndex] =
-          (_playerScores[_activePlayerIndex] - 50).clamp(0, 99999);
+  // Word Guess için - harf tahmin et
+  void guessLetter(String letter) {
+    if (_status != GameStatus.playing ||
+        _currentQuestion == null ||
+        !_currentQuestion!.isWordGuess ||
+        _guessedLetters.contains(letter) ||
+        _eliminatedLetters.contains(letter)) {
       return;
     }
 
-    // Puan Formülü: (Kalan Süre + Kalan Can) * Zorluk Çarpanı
-    int difficultyMultiplier = 1;
-    if (_difficulty == Difficulty.medium) difficultyMultiplier = 2;
-    if (_difficulty == Difficulty.hard) difficultyMultiplier = 3;
+    _guessedLetters.add(letter);
 
-    int roundScore = (_currentTime + (_lives * 10)) * difficultyMultiplier;
+    final answer = _currentQuestion!.answer?.toUpperCase() ?? '';
+    if (!answer.contains(letter)) {
+      _currentTime = (_currentTime - 3).clamp(0, _maxTime);
+    }
+
+    // Tüm harfler tahmin edildi mi kontrol et
+    final allGuessed = answer.split('').every((char) => _guessedLetters.contains(char));
+
+    if (allGuessed) {
+      _cancelTimer();
+      _isLastAnswerCorrect = true;
+      _correctAnswers++;
+      _calculateScore(isCorrect: true);
+      _status = GameStatus.answered;
+    }
+
+    notifyListeners();
+  }
+
+  // Word Guess için - kelime gönder
+  void submitWord(String word) {
+    if (_status != GameStatus.playing ||
+        _currentQuestion == null ||
+        !_currentQuestion!.isWordGuess) {
+      return;
+    }
+
+    _cancelTimer();
+    _currentGuess = word.toUpperCase();
+    _isLastAnswerCorrect = _currentQuestion!.isCorrectWord(word);
+
+    if (_isLastAnswerCorrect!) {
+      _correctAnswers++;
+      _calculateScore(isCorrect: true);
+    } else {
+      _wrongAnswers++;
+      _calculateScore(isCorrect: false);
+    }
+
+    _status = GameStatus.answered;
+    notifyListeners();
+  }
+
+  void _calculateScore({required bool isCorrect}) {
+    if (!isCorrect) {
+      return;
+    }
+
+    int difficultyMultiplier = 1;
+    if (_difficulty == Difficulty.medium) {
+      difficultyMultiplier = 2;
+    }
+    if (_difficulty == Difficulty.hard) {
+      difficultyMultiplier = 3;
+    }
+
+    int timeBonus = _currentTime * 2;
+    int baseScore = 100;
+    int roundScore = (baseScore + timeBonus) * difficultyMultiplier;
     _playerScores[_activePlayerIndex] += roundScore;
   }
 
-  void nextLevel() {
+  void nextQuestion() {
     if (_gameMode == GameMode.multiplayer) {
       _activePlayerIndex = (_activePlayerIndex + 1) % 2;
     }
-    _currentLevelIndex++;
-    _startLevel();
+    _currentQuestionIndex++;
+
+    if (_currentQuestionIndex >= _filteredQuestions.length) {
+      _endGame();
+    } else {
+      _startQuestion();
+    }
   }
 
   Future<void> saveScore(String playerName, int avatarIndex) async {
@@ -257,81 +338,107 @@ class GameProvider extends ChangeNotifier {
     }
   }
 
-  int get totalScore => _playerScores[_activePlayerIndex];
-  Difficulty get difficulty => _difficulty;
-  int get maxTime => _maxTime;
-
   // --- JOKER FONKSİYONLARI ---
 
-  // Arkadaşı Ara: Doğru bir harfi gösterir
-  String? useAskFriend() {
-    if (!_hasAskFriend || _currentWord == null) return null;
+  // Multiple Choice: Doğru cevabı gösterir
+  // Word Guess: Bir harfi açar
+  dynamic useAskFriend() {
+    if (!_hasAskFriend || _currentQuestion == null || _status != GameStatus.playing) {
+      return null;
+    }
 
     _hasAskFriend = false;
 
-    // Henüz tahmin edilmemiş harfleri bul
-    final unguessedLetters = _currentWord!.word
-        .split('')
-        .where((letter) => !_guessedLetters.contains(letter))
-        .toSet()
-        .toList();
+    if (_currentQuestion!.isMultipleChoice) {
+      notifyListeners();
+      return _currentQuestion!.correctIndex;
+    } else {
+      // Word guess - bir harf aç
+      final answer = _currentQuestion!.answer?.toUpperCase() ?? '';
+      final unguessed = answer.split('').where((c) => !_guessedLetters.contains(c)).toSet().toList();
+      if (unguessed.isNotEmpty) {
+        unguessed.shuffle();
+        _revealedLetter = unguessed.first;
+        _guessedLetters.add(_revealedLetter!);
 
-    if (unguessedLetters.isEmpty) return null;
+        // Tüm harfler tahmin edildi mi kontrol et
+        final allGuessed = answer.split('').every((char) => _guessedLetters.contains(char));
+        if (allGuessed) {
+          _cancelTimer();
+          _isLastAnswerCorrect = true;
+          _correctAnswers++;
+          _calculateScore(isCorrect: true);
+          _status = GameStatus.answered;
+        }
 
-    // Rastgele bir doğru harf seç
-    unguessedLetters.shuffle();
-    final revealedLetter = unguessedLetters.first;
+        notifyListeners();
+        return _revealedLetter;
+      }
+    }
 
-    // Harfi otomatik tahmin et
-    _guessedLetters.add(revealedLetter);
-    _playerScores[_activePlayerIndex] += 5; // Yarım puan
-
-    _checkGameStatus();
     notifyListeners();
-
-    return revealedLetter;
+    return null;
   }
 
-  // 50/50: Yanlış 2 harfi klavyeden kaldırır
-  List<String> useFiftyFifty() {
-    if (!_hasFiftyFifty || _currentWord == null) return [];
+  // Multiple Choice: 2 yanlış şıkkı eler
+  // Word Guess: 3 yanlış harfi eler
+  List<dynamic> useFiftyFifty() {
+    if (!_hasFiftyFifty || _currentQuestion == null || _status != GameStatus.playing) {
+      return [];
+    }
 
     _hasFiftyFifty = false;
 
-    const turkishAlphabet = 'ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ';
+    if (_currentQuestion!.isMultipleChoice && _currentQuestion!.options != null) {
+      final wrongOptions = <int>[];
+      for (int i = 0; i < _currentQuestion!.options!.length; i++) {
+        if (i != _currentQuestion!.correctIndex && !_eliminatedOptions.contains(i)) {
+          wrongOptions.add(i);
+        }
+      }
 
-    // Kelimede olmayan ve henüz elenmemiş harfleri bul
-    final wrongLetters = turkishAlphabet
-        .split('')
-        .where(
-          (letter) =>
-              !_currentWord!.word.contains(letter) &&
-              !_guessedLetters.contains(letter) &&
-              !_eliminatedLetters.contains(letter),
-        )
-        .toList();
+      wrongOptions.shuffle();
+      final toEliminate = wrongOptions.take(2).toList();
+      _eliminatedOptions.addAll(toEliminate);
 
-    wrongLetters.shuffle();
+      notifyListeners();
+      return toEliminate;
+    } else {
+      // Word guess - yanlış harfleri ele
+      const turkishAlphabet = 'ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ';
+      final answer = _currentQuestion!.answer?.toUpperCase() ?? '';
 
-    // En fazla 2 harf ele
-    final toEliminate = wrongLetters.take(2).toList();
-    _eliminatedLetters.addAll(toEliminate);
+      final wrongLetters = turkishAlphabet.split('').where((letter) =>
+          !answer.contains(letter) &&
+          !_guessedLetters.contains(letter) &&
+          !_eliminatedLetters.contains(letter)).toList();
 
-    notifyListeners();
-    return toEliminate;
+      wrongLetters.shuffle();
+      final toEliminate = wrongLetters.take(3).toList();
+      _eliminatedLetters.addAll(toEliminate);
+
+      notifyListeners();
+      return toEliminate;
+    }
   }
 
-  // Soruyu Geç: Mevcut soruyu atlar
+  // Soruyu Geç
   void useSkipQuestion() {
-    if (!_hasSkipQuestion) return;
+    if (!_hasSkipQuestion || _status != GameStatus.playing) {
+      return;
+    }
 
     _hasSkipQuestion = false;
     _cancelTimer();
-
-    // Sonraki soruya geç (puan kaybı yok)
-    _currentLevelIndex++;
+    _currentQuestionIndex++;
+    _eliminatedOptions.clear();
     _eliminatedLetters.clear();
-    _startLevel();
+
+    if (_currentQuestionIndex >= _filteredQuestions.length) {
+      _endGame();
+    } else {
+      _startQuestion();
+    }
   }
 
   @override

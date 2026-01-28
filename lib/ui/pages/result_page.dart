@@ -5,7 +5,7 @@ import 'dart:math';
 import '../../core/constants.dart';
 import '../../logic/game_provider.dart';
 import '../../logic/auth_provider.dart';
-import 'game_page.dart';
+import 'quiz_page.dart';
 
 class ResultPage extends StatefulWidget {
   const ResultPage({super.key});
@@ -20,6 +20,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
   late AnimationController _bounceController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _bounceAnimation;
+  bool _scoreSaved = false;
 
   @override
   void initState() {
@@ -45,12 +46,12 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
       CurvedAnimation(parent: _bounceController, curve: Curves.bounceOut),
     );
 
-    // Animasyonları başlat
+    final game = context.read<GameProvider>();
     Future.delayed(const Duration(milliseconds: 100), () {
+      if (!mounted) return;
       _scaleController.forward();
       _bounceController.forward();
 
-      final game = context.read<GameProvider>();
       if (game.status == GameStatus.won) {
         _confettiController.play();
       }
@@ -72,14 +73,16 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
     final isWon = game.status == GameStatus.won;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (isWon) {
+    // Save score once
+    if (!_scoreSaved) {
+      _scoreSaved = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         game.saveScore(
           auth.currentUser?.name ?? "Misafir",
           auth.currentUser?.avatarIndex ?? 0,
         );
-      }
-    });
+      });
+    }
 
     return Scaffold(
       backgroundColor: isWon
@@ -87,7 +90,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
           : (isDark ? const Color(0xFF3D1B1B) : AppColors.failure),
       body: Stack(
         children: [
-          // Confetti
+          // Confetti widgets
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(
@@ -110,8 +113,6 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               ],
             ),
           ),
-
-          // Sol üst confetti
           Align(
             alignment: Alignment.topLeft,
             child: ConfettiWidget(
@@ -123,16 +124,9 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               numberOfParticles: 15,
               gravity: 0.1,
               shouldLoop: false,
-              colors: const [
-                Colors.amber,
-                Colors.cyan,
-                Colors.lime,
-                Colors.indigo,
-              ],
+              colors: const [Colors.amber, Colors.cyan, Colors.lime, Colors.indigo],
             ),
           ),
-
-          // Sağ üst confetti
           Align(
             alignment: Alignment.topRight,
             child: ConfettiWidget(
@@ -144,12 +138,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
               numberOfParticles: 15,
               gravity: 0.1,
               shouldLoop: false,
-              colors: const [
-                Colors.teal,
-                Colors.deepOrange,
-                Colors.lightBlue,
-                Colors.pinkAccent,
-              ],
+              colors: const [Colors.teal, Colors.deepOrange, Colors.lightBlue, Colors.pinkAccent],
             ),
           ),
 
@@ -226,7 +215,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                             : [AppColors.failure, Colors.orange],
                       ).createShader(bounds),
                       child: Text(
-                        isWon ? "TEBRİKLER!" : "SÜRE DOLDU!",
+                        isWon ? "TEBRİKLER!" : "OYUN BİTTİ",
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -234,16 +223,28 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 20),
 
-                    // Cevap
-                    Text(
-                      "Cevap: ${game.currentWord?.word}",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? AppColors.primaryDarkTheme : AppColors.primaryDark,
-                      ),
+                    // İstatistikler
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _StatCard(
+                          icon: Icons.check_circle,
+                          value: "${game.correctAnswers}",
+                          label: "Doğru",
+                          color: AppColors.success,
+                          isDark: isDark,
+                        ),
+                        const SizedBox(width: 16),
+                        _StatCard(
+                          icon: Icons.cancel,
+                          value: "${game.wrongAnswers}",
+                          label: "Yanlış",
+                          color: AppColors.failure,
+                          isDark: isDark,
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 20),
 
@@ -260,12 +261,10 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                         );
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: isWon
-                                ? [AppColors.accent, AppColors.accent.withValues(alpha: 0.8)]
-                                : [AppColors.neutral, AppColors.neutralDark],
+                            colors: [AppColors.accent, AppColors.accent.withValues(alpha: 0.8)],
                           ),
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
@@ -279,17 +278,13 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              isWon ? Icons.star : Icons.star_border,
-                              color: Colors.white,
-                              size: 28,
-                            ),
+                            const Icon(Icons.star, color: Colors.white, size: 28),
                             const SizedBox(width: 12),
                             Text(
-                              "+${isWon ? game.currentScore : 0} Puan",
+                              "${game.currentScore} Puan",
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 20,
+                                fontSize: 22,
                                 color: Colors.white,
                               ),
                             ),
@@ -327,7 +322,7 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                         Flexible(
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: isWon ? AppColors.success : AppColors.primary,
+                              backgroundColor: AppColors.primary,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -339,15 +334,18 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                               elevation: 4,
                             ),
                             onPressed: () {
-                              game.nextLevel();
+                              game.initGame(
+                                mode: game.gameMode,
+                                difficulty: game.difficulty,
+                              );
                               Navigator.pushReplacement(
                                 context,
-                                MaterialPageRoute(builder: (_) => const GamePage()),
+                                MaterialPageRoute(builder: (_) => const QuizPage()),
                               );
                             },
-                            icon: const Icon(Icons.play_arrow, size: 20),
+                            icon: const Icon(Icons.replay, size: 20),
                             label: const Text(
-                              "DEVAM",
+                              "YENİDEN",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
@@ -360,6 +358,55 @@ class _ResultPageState extends State<ResultPage> with TickerProviderStateMixin {
                   ],
                 ),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String label;
+  final Color color;
+  final bool isDark;
+
+  const _StatCard({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.color,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark ? AppColors.textSecondaryDark : AppColors.neutral,
             ),
           ),
         ],

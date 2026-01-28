@@ -15,7 +15,7 @@ class GameHeader extends StatelessWidget {
         color: Colors.white,
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
         ],
       ),
       child: Row(

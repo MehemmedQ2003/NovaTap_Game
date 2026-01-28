@@ -114,9 +114,12 @@ class _ContactPageState extends State<ContactPage> {
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     final email = (value ?? '').trim();
-                    if (email.isEmpty) return 'E-posta adresinizi yazınız.';
-                    if (!email.contains('@'))
+                    if (email.isEmpty) {
+                      return 'E-posta adresinizi yazınız.';
+                    }
+                    if (!email.contains('@')) {
                       return 'Geçerli bir e-posta giriniz.';
+                    }
                     return null;
                   },
                 ),

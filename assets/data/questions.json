@@ -2,183 +2,273 @@
   "questions": [
     {
       "id": "1",
-      "word": "NAMAZ",
-      "hint": "Dinin direği, günde beş vakit kılınan ibadet",
-      "difficulty": "easy"
+      "question": "Günde kaç vakit namaz kılınır?",
+      "type": "multiple_choice",
+      "options": ["3 vakit", "4 vakit", "5 vakit", "6 vakit", "7 vakit"],
+      "correctIndex": 2,
+      "difficulty": "easy",
+      "imageUrl": "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800"
     },
     {
       "id": "2",
-      "word": "ORUÇ",
-      "hint": "Ramazan ayında tutulan ibadet",
-      "difficulty": "easy"
+      "question": "Müslümanların kutsal kitabının adı nedir?",
+      "type": "word_guess",
+      "answer": "KURAN",
+      "hint": "5 harfli, K ile başlar",
+      "difficulty": "easy",
+      "imageUrl": "https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=800"
     },
     {
       "id": "3",
-      "word": "MEKKE",
-      "hint": "Kabe'nin bulunduğu kutsal şehir",
-      "difficulty": "easy"
+      "question": "Kabe hangi şehirde bulunmaktadır?",
+      "type": "multiple_choice",
+      "options": ["Medine", "Mekke", "Kudüs", "İstanbul", "Kahire"],
+      "correctIndex": 1,
+      "difficulty": "easy",
+      "imageUrl": "https://images.unsplash.com/photo-1580418827493-f2b22c0a76cb?w=800"
     },
     {
       "id": "4",
-      "word": "KURAN",
-      "hint": "Müslümanların kutsal kitabı",
-      "difficulty": "easy"
+      "question": "Ramazan ayında tutulan ibadetin adı nedir?",
+      "type": "word_guess",
+      "answer": "ORUÇ",
+      "hint": "4 harfli, O ile başlar",
+      "difficulty": "easy",
+      "imageUrl": "https://images.unsplash.com/photo-1564769625905-50e93615e769?w=800"
     },
     {
       "id": "5",
-      "word": "CAMI",
-      "hint": "Müslümanların ibadet ettiği yer",
-      "difficulty": "easy"
+      "question": "Müslümanların ibadet ettiği yere ne denir?",
+      "type": "multiple_choice",
+      "options": ["Kilise", "Havra", "Cami", "Manastır", "Tapınak"],
+      "correctIndex": 2,
+      "difficulty": "easy",
+      "imageUrl": "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=800"
     },
     {
       "id": "6",
-      "word": "ABDEST",
-      "hint": "Namaz öncesi yapılan temizlik",
-      "difficulty": "easy"
+      "question": "Namaz kılmadan önce yapılan temizliğin adı nedir?",
+      "type": "word_guess",
+      "answer": "ABDEST",
+      "hint": "6 harfli, A ile başlar",
+      "difficulty": "easy",
+      "imageUrl": "https://images.unsplash.com/photo-1585036156171-384164a8c675?w=800"
     },
     {
       "id": "7",
-      "word": "KIBLE",
-      "hint": "Namaz kılarken yönelinen yön",
-      "difficulty": "easy"
+      "question": "Namaz kılarken hangi yöne dönülür?",
+      "type": "multiple_choice",
+      "options": ["Kuzey", "Güney", "Doğu", "Batı", "Kıble"],
+      "correctIndex": 4,
+      "difficulty": "easy",
+      "imageUrl": "https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=800"
     },
     {
       "id": "8",
-      "word": "DUA",
-      "hint": "Allah'a yapılan yakarış",
-      "difficulty": "easy"
+      "question": "Dinin direği olan ibadetin adı nedir?",
+      "type": "word_guess",
+      "answer": "NAMAZ",
+      "hint": "5 harfli, N ile başlar",
+      "difficulty": "easy",
+      "imageUrl": "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800"
     },
     {
       "id": "9",
-      "word": "CENNET",
-      "hint": "Ahirette iyilerin gideceği yer",
-      "difficulty": "easy"
+      "question": "Hz. Muhammed (s.a.v) hangi şehirde doğmuştur?",
+      "type": "multiple_choice",
+      "options": ["Medine", "Mekke", "Taif", "Kudüs", "Şam"],
+      "correctIndex": 1,
+      "difficulty": "easy",
+      "imageUrl": "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800"
     },
     {
       "id": "10",
-      "word": "RAMAZAN",
-      "hint": "Oruç tutulan mübarek ay",
-      "difficulty": "easy"
+      "question": "Allah'a yapılan yakarışın adı nedir?",
+      "type": "word_guess",
+      "answer": "DUA",
+      "hint": "3 harfli, D ile başlar",
+      "difficulty": "easy",
+      "imageUrl": "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=800"
     },
     {
       "id": "11",
-      "word": "ZEKAT",
-      "hint": "Zenginlerin fakirlere vermesi gereken pay",
-      "difficulty": "medium"
+      "question": "Zenginlerin mallarından fakirlere verdikleri paya ne denir?",
+      "type": "multiple_choice",
+      "options": ["Sadaka", "Fitre", "Zekat", "Kurban", "Adak"],
+      "correctIndex": 2,
+      "difficulty": "medium",
+      "imageUrl": "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=800"
     },
     {
       "id": "12",
-      "word": "TEYEMMÜM",
-      "hint": "Su bulunamadığında toprakla yapılan temizlik",
-      "difficulty": "medium"
+      "question": "Hz. Muhammed'in Mekke'den Medine'ye göçünün adı nedir?",
+      "type": "word_guess",
+      "answer": "HİCRET",
+      "hint": "6 harfli, H ile başlar",
+      "difficulty": "medium",
+      "imageUrl": "https://images.unsplash.com/photo-1473172707857-f9e276582ab6?w=800"
     },
     {
       "id": "13",
-      "word": "HİCRET",
-      "hint": "Hz. Muhammed'in Mekke'den Medine'ye göçü",
-      "difficulty": "medium"
+      "question": "Namaz vaktini bildiren çağrıya ne denir?",
+      "type": "multiple_choice",
+      "options": ["Kamet", "Ezan", "Tesbih", "Tekbir", "Salavat"],
+      "correctIndex": 1,
+      "difficulty": "medium",
+      "imageUrl": "https://images.unsplash.com/photo-1564769625905-50e93615e769?w=800"
     },
     {
       "id": "14",
-      "word": "SALAVAT",
-      "hint": "Peygamberimize getirilen dua",
-      "difficulty": "medium"
+      "question": "Namazda alnı yere koyma hareketinin adı nedir?",
+      "type": "word_guess",
+      "answer": "SECDE",
+      "hint": "5 harfli, S ile başlar",
+      "difficulty": "medium",
+      "imageUrl": "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800"
     },
     {
       "id": "15",
-      "word": "EZAN",
-      "hint": "Namaz vaktini bildiren çağrı",
-      "difficulty": "medium"
+      "question": "Hz. Muhammed'in sözlerine ne denir?",
+      "type": "multiple_choice",
+      "options": ["Ayet", "Sure", "Hadis", "Tefsir", "Fıkıh"],
+      "correctIndex": 2,
+      "difficulty": "medium",
+      "imageUrl": "https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=800"
     },
     {
       "id": "16",
-      "word": "SECDE",
-      "hint": "Namazda alnı yere koyma",
-      "difficulty": "medium"
+      "question": "Oruç açma vakti yemeğinin adı nedir?",
+      "type": "word_guess",
+      "answer": "İFTAR",
+      "hint": "5 harfli, İ ile başlar",
+      "difficulty": "medium",
+      "imageUrl": "https://images.unsplash.com/photo-1567982047351-76b6f93e38ee?w=800"
     },
     {
       "id": "17",
-      "word": "HADIS",
-      "hint": "Hz. Muhammed'in sözleri",
-      "difficulty": "medium"
+      "question": "Kuran-ı Kerim kaç sureden oluşur?",
+      "type": "multiple_choice",
+      "options": ["100", "110", "114", "120", "124"],
+      "correctIndex": 2,
+      "difficulty": "medium",
+      "imageUrl": "https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=800"
     },
     {
       "id": "18",
-      "word": "SAHUR",
-      "hint": "Oruç öncesi yenen yemek",
-      "difficulty": "medium"
+      "question": "Oruç öncesi yenen sabah yemeğinin adı nedir?",
+      "type": "word_guess",
+      "answer": "SAHUR",
+      "hint": "5 harfli, S ile başlar",
+      "difficulty": "medium",
+      "imageUrl": "https://images.unsplash.com/photo-1567982047351-76b6f93e38ee?w=800"
     },
     {
       "id": "19",
-      "word": "İFTAR",
-      "hint": "Oruç açma vakti yemeği",
-      "difficulty": "medium"
+      "question": "Peygamberimizin yolu ve uygulamalarına ne denir?",
+      "type": "multiple_choice",
+      "options": ["Farz", "Vacip", "Sünnet", "Mekruh", "Mubah"],
+      "correctIndex": 2,
+      "difficulty": "medium",
+      "imageUrl": "https://images.unsplash.com/photo-1585036156171-384164a8c675?w=800"
     },
     {
       "id": "20",
-      "word": "SÜNNET",
-      "hint": "Peygamberimizin yolu ve uygulamaları",
-      "difficulty": "medium"
+      "question": "Malın temizlenmesi için verilen payın adı nedir?",
+      "type": "word_guess",
+      "answer": "ZEKAT",
+      "hint": "5 harfli, Z ile başlar",
+      "difficulty": "medium",
+      "imageUrl": "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=800"
     },
     {
       "id": "21",
-      "word": "MUKABELE",
-      "hint": "Ramazanda karşılıklı Kuran okuma",
-      "difficulty": "hard"
+      "question": "Allah'a güvenip bağlanma anlamına gelen kavram nedir?",
+      "type": "multiple_choice",
+      "options": ["Takva", "Tevekkül", "Teslimiyet", "Tefekkür", "Tövbe"],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "imageUrl": "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800"
     },
     {
       "id": "22",
-      "word": "TEVEKKÜL",
-      "hint": "Allah'a güvenip bağlanma",
-      "difficulty": "hard"
+      "question": "Allah'tan bağışlanma dilemenin adı nedir?",
+      "type": "word_guess",
+      "answer": "İSTİĞFAR",
+      "hint": "8 harfli, İ ile başlar",
+      "difficulty": "hard",
+      "imageUrl": "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=800"
     },
     {
       "id": "23",
-      "word": "MÜTEVAZI",
-      "hint": "Alçak gönüllü, kibirsiz olma hali",
-      "difficulty": "hard"
+      "question": "Ezan okuyan kişiye ne denir?",
+      "type": "multiple_choice",
+      "options": ["İmam", "Müezzin", "Hatip", "Vaiz", "Hafız"],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "imageUrl": "https://images.unsplash.com/photo-1564769625905-50e93615e769?w=800"
     },
     {
       "id": "24",
-      "word": "İSTİĞFAR",
-      "hint": "Allah'tan bağışlanma dileme",
-      "difficulty": "hard"
+      "question": "Caminin yüksek kulesinin adı nedir?",
+      "type": "word_guess",
+      "answer": "MİNARE",
+      "hint": "6 harfli, M ile başlar",
+      "difficulty": "hard",
+      "imageUrl": "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=800"
     },
     {
       "id": "25",
-      "word": "MÜEZZIN",
-      "hint": "Ezan okuyan kişi",
-      "difficulty": "hard"
+      "question": "Kuran'ın açıklanması ve yorumlanmasına ne denir?",
+      "type": "multiple_choice",
+      "options": ["Hadis", "Fıkıh", "Tefsir", "Kelam", "Tasavvuf"],
+      "correctIndex": 2,
+      "difficulty": "hard",
+      "imageUrl": "https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=800"
     },
     {
       "id": "26",
-      "word": "MİNARE",
-      "hint": "Caminin yüksek kulesi",
-      "difficulty": "hard"
+      "question": "Kuran'ı doğru okuma kurallarının adı nedir?",
+      "type": "word_guess",
+      "answer": "TECVİT",
+      "hint": "6 harfli, T ile başlar",
+      "difficulty": "hard",
+      "imageUrl": "https://images.unsplash.com/photo-1585036156171-384164a8c675?w=800"
     },
     {
       "id": "27",
-      "word": "TEFSİR",
-      "hint": "Kuran'ın açıklanması ve yorumlanması",
-      "difficulty": "hard"
+      "question": "Camide ibadet için kalmaya ne denir?",
+      "type": "multiple_choice",
+      "options": ["Halvet", "İtikaf", "Uzlet", "Riyazet", "Çile"],
+      "correctIndex": 1,
+      "difficulty": "hard",
+      "imageUrl": "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=800"
     },
     {
       "id": "28",
-      "word": "TECVIT",
-      "hint": "Kuran'ı doğru okuma kuralları",
-      "difficulty": "hard"
+      "question": "Kıyamet günü insanların toplanacağı yerin adı nedir?",
+      "type": "word_guess",
+      "answer": "MAHŞER",
+      "hint": "6 harfli, M ile başlar",
+      "difficulty": "hard",
+      "imageUrl": "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800"
     },
     {
       "id": "29",
-      "word": "İTİKAF",
-      "hint": "Camide ibadet için kalma",
-      "difficulty": "hard"
+      "question": "İslam'da alçak gönüllü olmaya ne denir?",
+      "type": "multiple_choice",
+      "options": ["Takva", "Vera", "Tevazu", "Zühd", "Kanaat"],
+      "correctIndex": 2,
+      "difficulty": "hard",
+      "imageUrl": "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=800"
     },
     {
       "id": "30",
-      "word": "MAHŞER",
-      "hint": "Kıyamet günü toplanma yeri",
-      "difficulty": "hard"
+      "question": "Allah'a güvenme ve bağlanmanın adı nedir?",
+      "type": "word_guess",
+      "answer": "TEVEKKÜL",
+      "hint": "8 harfli, T ile başlar",
+      "difficulty": "hard",
+      "imageUrl": "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800"
     }
   ]
 }

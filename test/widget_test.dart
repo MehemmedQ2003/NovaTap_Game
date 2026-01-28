@@ -1,10 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-// DİKKAT: 'flutter_application_1' yerine pubspec.yaml dosyasındaki
-// 'name:' kısmında yazan proje adını yazmalısın.
-// Eğer proje adın farklıysa aşağıdaki satırı ona göre düzelt.
-import 'package:flutter_application_1/main.dart'; 
+import 'package:nova_tap/main.dart'; 
 
 void main() {
   testWidgets('Oyun giriş ekranı yükleniyor ve Başla butonu görünüyor', (WidgetTester tester) async {

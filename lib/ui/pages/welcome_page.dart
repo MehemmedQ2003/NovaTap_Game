@@ -18,9 +18,10 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   void initState() {
     super.initState();
+    final auth = context.read<AuthProvider>();
     Future.microtask(() async {
-      await context.read<AuthProvider>().checkLoginStatus();
-      if (mounted && context.read<AuthProvider>().isLoggedIn) {
+      await auth.checkLoginStatus();
+      if (mounted && auth.isLoggedIn) {
         _navigateToHome();
       }
     });
